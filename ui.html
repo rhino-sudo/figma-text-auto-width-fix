@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  :root {
+    --bg: var(--figma-color-bg, #ffffff);
+    --text: var(--figma-color-text, #1e1e1e);
+    --muted: var(--figma-color-text-secondary, #6b6b6b);
+    --line: var(--figma-color-border, #e6e6e6);
+    --danger: var(--figma-color-text-danger, #b3261e);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 16px;
+    background: var(--bg);
+    color: var(--text);
+    font: 11px/1.45 Inter, "Helvetica Neue", Arial, sans-serif;
+  }
+  h1 { margin: 0 0 12px; font-size: 13px; font-weight: 600; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+  .stat {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+  .stat b { display: block; font-size: 18px; font-weight: 600; line-height: 1.2; }
+  .stat span { color: var(--muted); }
+  .note { color: var(--muted); margin-bottom: 12px; }
+  .skipped-title { font-weight: 600; color: var(--danger); margin: 0 0 6px; }
+  ul { list-style: none; margin: 0 0 12px; padding: 0; max-height: 220px; overflow-y: auto; }
+  li { border-top: 1px solid var(--line); padding: 7px 0; }
+  li .path { color: var(--muted); word-break: break-word; }
+  li .reason { margin-top: 2px; word-break: break-word; }
+  .actions { display: flex; gap: 8px; justify-content: flex-end; }
+  button {
+    font: inherit;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+  }
+  button.primary {
+    background: var(--figma-color-bg-brand, #0d99ff);
+    border-color: transparent;
+    color: var(--figma-color-text-onbrand, #ffffff);
+  }
+</style>
+</head>
+<body>
+  <h1 id="title">Done</h1>
+
+  <div class="stats">
+    <div class="stat"><b id="changed">0</b><span id="changed-label">converted</span></div>
+    <div class="stat"><b id="already">0</b><span>already Auto Width</span></div>
+    <div class="stat"><b id="total">0</b><span>text layers found</span></div>
+  </div>
+
+  <p class="note" id="note"></p>
+
+  <div id="skipped-wrap" hidden>
+    <p class="skipped-title"><span id="skipped-count">0</span> layer(s) could not be changed</p>
+    <ul id="skipped-list"></ul>
+  </div>
+
+  <div class="actions">
+    <button id="select-skipped" hidden>Select skipped layers</button>
+    <button id="close" class="primary">Done</button>
+  </div>
+
+<script>
+  function post(type) {
+    parent.postMessage({ pluginMessage: { type: type } }, '*');
+  }
+
+  document.getElementById('close').onclick = function () { post('close'); };
+  document.getElementById('select-skipped').onclick = function () { post('select-skipped'); };
+
+  onmessage = function (event) {
+    var report = event.data.pluginMessage;
+    if (!report) return;
+
+    document.getElementById('title').textContent = report.dryRun
+      ? 'Preview (nothing was changed)'
+      : 'Auto Width conversion complete';
+    document.getElementById('changed-label').textContent = report.dryRun ? 'would convert' : 'converted';
+    document.getElementById('changed').textContent = report.changed;
+    document.getElementById('already').textContent = report.alreadyAutoWidth;
+    document.getElementById('total').textContent = report.totalText;
+
+    document.getElementById('note').textContent =
+      'Searched ' + report.rootCount + ' selected layer(s) and all nested children.';
+
+    if (report.skipped.length > 0) {
+      document.getElementById('skipped-wrap').hidden = false;
+      document.getElementById('skipped-count').textContent = report.skipped.length;
+
+      var list = document.getElementById('skipped-list');
+      report.skipped.forEach(function (item) {
+        var li = document.createElement('li');
+
+        var path = document.createElement('div');
+        path.className = 'path';
+        path.textContent = item.path;
+
+        var reason = document.createElement('div');
+        reason.className = 'reason';
+        reason.textContent = item.reason;
+
+        li.appendChild(path);
+        li.appendChild(reason);
+        list.appendChild(li);
+      });
+
+      document.getElementById('select-skipped').hidden = false;
+    }
+  };
+</script>
+</body>
+</html>

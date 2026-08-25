@@ -1,0 +1,28 @@
+{
+  "name": "Text Auto Width Fix",
+  "id": "1673801894417466142",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "documentAccess": "dynamic-page",
+  "editorType": [
+    "figma"
+  ],
+  "menu": [
+    {
+      "name": "Convert all text to Auto Width",
+      "command": "convert"
+    },
+    {
+      "name": "Preview (count only, no changes)",
+      "command": "preview"
+    }
+  ],
+  "networkAccess": {
+    "allowedDomains": [
+      "none"
+    ]
+  }
+}
